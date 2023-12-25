@@ -1,0 +1,147 @@
+&GLOBAL
+  PROJECT OMEGA_monomer
+  PRINT_LEVEL LOW
+  RUN_TYPE ENERGY
+&END GLOBAL
+
+&FORCE_EVAL
+  METHOD Quickstep
+  &SUBSYS
+    &CELL
+      ABC  27.52 27.52 40.18
+      ALPHA_BETA_GAMMA [deg] 90.0 90.0 90.0
+      PERIODIC XYZ #Direction(s) of applied PBC (geometry aspect)
+    &END CELL
+    &COORD
+F       9.456059   8.062165  21.883249
+F       9.861983   8.597286  24.452101
+C      10.094249   9.251650  22.202389
+C       9.674936   8.890986  19.135166
+H       9.339186   8.190805  19.681553
+C       9.489447   8.766457  17.673991
+C       9.004604   8.456310  14.892378
+C       8.687776   7.440108  15.803025
+C       8.917637   7.610454  17.168995
+H       8.676114   6.912623  17.765056
+C       8.729118   8.403444  13.476738
+H       9.093998   9.104800  12.946905
+C      10.283490   9.490134  23.522829
+C      10.479476  10.122764  21.179983
+C      10.286317   9.930684  19.760198
+C       9.840584   9.783834  16.771623
+C       9.601298   9.607614  15.409793
+H       8.311237   6.627734  15.488438
+C       8.006318   7.463604  12.818588
+C      10.903742  10.646725  23.949179
+C      11.100548  11.278767  21.656003
+H      10.628628  10.613830  19.197256
+H      10.240664  10.585048  17.086210
+H       9.853454  10.301333  14.813733
+C       7.646538   7.457730  11.402945
+H       7.700398   6.728179  13.331860
+H      11.056049  10.817658  24.872244
+C      11.293587  11.543684  22.976439
+F      11.534958  12.195698  20.747011
+C       6.850880   6.447402  10.885532
+C       8.052664   8.462184  10.496437
+F      11.926509  12.696163  23.335320
+C       6.458295   6.423906   9.552677
+H       6.566421   5.743697  11.456755
+H       8.597926   9.171763  10.819302
+C       7.693317   8.462184   9.176000
+C       6.844774   7.422486   8.675145
+H       5.915447   5.710215   9.238090
+H       8.006809   9.142981   8.592357
+N       6.435034   7.461842   7.338147
+C       5.566747   6.412158   6.837292
+C       6.898836   8.485680   6.452337
+H       4.729110   6.412158   7.342287
+H       5.375301   6.574868   5.889392
+H       6.011117   5.545743   6.936634
+H       6.561508   8.310047   5.545829
+H       6.575071   9.356207   6.758644
+H       7.879396   8.486268   6.439919
+    &END COORD
+    &KIND H
+      ELEMENT H
+      BASIS_SET TZVP-GTH-q1
+      POTENTIAL GTH-PBE
+    &END KIND    
+    &KIND C
+      ELEMENT C
+      BASIS_SET TZVP-GTH-q4
+      POTENTIAL GTH-PBE
+    &END KIND  
+    &KIND N
+      ELEMENT N
+      BASIS_SET TZVP-GTH-q5
+      POTENTIAL GTH-PBE
+    &END KIND
+    &KIND F
+      ELEMENT F
+      BASIS_SET TZVP-GTH-q7
+      POTENTIAL GTH-PBE
+    &END KIND
+  &END SUBSYS
+
+  &DFT
+    BASIS_SET_FILE_NAME  GTH_BASIS_SETS
+    POTENTIAL_FILE_NAME  POTENTIAL
+#   WFN_RESTART_FILE_NAME OMEGA-RESTART.wfn
+    CHARGE    0 #Net charge
+    MULTIPLICITY    1 #Spin multiplicity
+    &QS
+      EPS_DEFAULT 1.0E-12 #Set all EPS_xxx to values such that the energy will be correct up to this value
+    &END QS
+    &POISSON
+      PERIODIC XYZ #Direction(s) of PBC for calculating electrostatics
+      PSOLVER PERIODIC #The way to solve Poisson equation
+    &END POISSON
+    &XC
+      &XC_FUNCTIONAL B3LYP
+      &END XC_FUNCTIONAL
+    &END XC
+    &MGRID
+      CUTOFF  500
+      REL_CUTOFF  50
+    &END MGRID
+    &SCF
+      MAX_SCF 128
+      EPS_SCF 1.0E-06 #Convergence threshold of density matrix of inner SCF
+#     SCF_GUESS RESTART #Use wavefunction from WFN_RESTART_FILE_NAME file as initial guess
+      &DIAGONALIZATION
+        ALGORITHM STANDARD #Algorithm for diagonalization
+      &END DIAGONALIZATION
+      &MIXING #How to mix old and new density matrices
+        METHOD BROYDEN_MIXING #PULAY_MIXING is also a good alternative
+        ALPHA 0.4 #Default. Mixing 40% of new density matrix with the old one
+        NBROYDEN 8 #Default is 4. Number of previous steps stored for the actual mixing scheme
+      &END MIXING
+      ADDED_MOS    30 #Number of virtual MOs to solve
+      &PRINT
+        &RESTART #Note: Use "&RESTART OFF" can prevent generating .wfn file
+          BACKUP_COPIES 0 #Maximum number of backup copies of wfn file. 0 means never
+        &END RESTART
+      &END PRINT
+    &END SCF
+    &PRINT
+      &MO_MOLDEN #Exporting .molden file containing wavefunction information
+        NDIGITS 9 #Output orbital coefficients if absolute value is larger than 1E-9
+      &END MO_MOLDEN
+    &END PRINT
+  &END DFT
+  &PROPERTIES
+    &TDDFPT #TDDFT calculation with Tamm-Dancoff approximation
+      NSTATES   50 #Number of excited states to solve
+      RKS_TRIPLETS F #If calculating triplet rather than singlet excited states
+      CONVERGENCE [eV] 1E-4 #Convergence criterion of all excitation energies
+      MIN_AMPLITUDE 0.01 #The smallest excitation amplitude to print
+#     RESTART T #If restarting TDDFT calculation. If true, WFN_RESTART_FILE_NAME should be set to previous .tdwfn file
+#     WFN_RESTART_FILE_NAME OMEGA_monomer-RESTART.tdwfn
+      &PRINT
+        #&DETAILED_ENERGY #Print excitation energies at every Davidson iteration
+        #&END DETAILED_ENERGY
+      &END PRINT
+    &END TDDFPT
+  &END PROPERTIES
+&END FORCE_EVAL
